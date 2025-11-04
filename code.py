@@ -1,13 +1,10 @@
 import usb_cdc
 import usb_hid
-from adafruit_hid.keyboard import Keyboard
-from adafruit_hid.keycode import Keycode
+#from adafruit_hid.keyboard import Keyboard
+#from adafruit_hid.keycode import Keycode
 import board, digitalio, time
 
-import usb_cdc
-usb_cdc.enable(console=True, data=True)
-
-kbd = Keyboard(usb_hid.devices)
+#kbd = Keyboard(usb_hid.devices)
 
 button = digitalio.DigitalInOut(board.GP24)
 button.switch_to_input(pull=digitalio.Pull.UP)
@@ -25,11 +22,11 @@ while True:
         was_pressed = pressed
         # Report to host (can be over serial)
         msg = "BTN_ON\n" if pressed else "BTN_OFF\n"
-        print(msg)  # visible in REPL
+        print(msg.strip())  # visible in REPL
 
     # Read any text from host
     if data_serial.in_waiting:
-        text = data_serial.read(data_serial.in_waiting).decode("utf-8", errors="ignore")
+        text = data_serial.read(data_serial.in_waiting).decode("utf-8")
         print(f"Got text: {text.strip()}")
         # Echo text back as HID keystrokes
 #for ch in text:
