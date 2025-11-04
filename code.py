@@ -16,17 +16,21 @@ button.switch_to_input(pull=digitalio.Pull.UP)
 # Our serial port setup
 data_serial = usb_cdc.data  # this is the "data" port
 
+# Button toggle state
+btn_state = False
+prev_pressed = False
+
 # Application banner
 print("Watching button and listening for text on data serial for HID events...")
-was_pressed = False
 while True:
     # Check for button change and print state changes to REPL
     pressed = not button.value
-    if pressed != was_pressed:
-        was_pressed = pressed
-        # Report to host (can be over serial)
-        msg = "BTN_ON\n" if pressed else "BTN_OFF\n"
-        print(msg.strip())  # visible in REPL
+
+    # Pressing the button toggles the state
+    if prev_pressed and not pressed:  # Released after being pressed
+        btn_state = not btn_state     # Toggle state
+        print("BTN_ON" if btn_state else "BTN_OFF")
+    prev_pressed = pressed
 
     # Read any text from host
     if data_serial.in_waiting:
@@ -36,10 +40,11 @@ while True:
         except Exception as e:
             print("Decode error:", e)
             text = ""
+        text = text.strip("\r")
 
         # May need to expand this for special handling
-        text = text.strip("\r")
-        print(f"Got text: {text.strip()}")
-        layout.write(text)
+        if text:
+            print(f"Typing: {repr(text)}")
+            layout.write(text)
 
     time.sleep(0.01)
