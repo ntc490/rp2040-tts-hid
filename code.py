@@ -1,22 +1,26 @@
 import usb_cdc
 import usb_hid
-#from adafruit_hid.keyboard import Keyboard
-#from adafruit_hid.keycode import Keycode
+from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
+from adafruit_hid.keycode import Keycode
 import board, digitalio, time
 
-#kbd = Keyboard(usb_hid.devices)
+# Keyboard and layout config
+kbd = Keyboard(usb_hid.devices)
+layout = KeyboardLayoutUS(kbd)
 
+# Button setup
 button = digitalio.DigitalInOut(board.GP24)
 button.switch_to_input(pull=digitalio.Pull.UP)
 
+# Our serial port setup
 data_serial = usb_cdc.data  # this is the "data" port
 
-print("Listening for text on data serial...")
-
+# Application banner
+print("Watching button and listening for text on data serial for HID events...")
 was_pressed = False
-
 while True:
-    # Check for button change
+    # Check for button change and print state changes to REPL
     pressed = not button.value
     if pressed != was_pressed:
         was_pressed = pressed
@@ -26,20 +30,16 @@ while True:
 
     # Read any text from host
     if data_serial.in_waiting:
-        text = data_serial.read(data_serial.in_waiting).decode("utf-8")
+        # Read data from whisper.cpp or other
+        try:
+            text = data_serial.read(data_serial.in_waiting).decode("utf-8")
+        except Exception as e:
+            print("Decode error:", e)
+            text = ""
+
+        # May need to expand this for special handling
+        text = text.strip("\r")
         print(f"Got text: {text.strip()}")
-        # Echo text back as HID keystrokes
-#for ch in text:
-#    if ch == "\n":
-#        kbd.press(Keycode.ENTER)
-#        kbd.release_all()
-#    elif ch == "\r":
-#        pass
-#    else:
-#        try:
-#            kbd_layout.write(ch)  # use KeyboardLayoutUS if needed
-#        except Exception as e:
-#            print("Unsupported char:", repr(ch))
-#kbd.release_all()
+        layout.write(text)
 
     time.sleep(0.01)
