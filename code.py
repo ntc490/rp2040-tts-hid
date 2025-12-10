@@ -10,7 +10,7 @@ kbd = Keyboard(usb_hid.devices)
 layout = KeyboardLayoutUS(kbd)
 
 # Button setup
-button = digitalio.DigitalInOut(board.GP24)
+button = digitalio.DigitalInOut(board.GP18)
 button.switch_to_input(pull=digitalio.Pull.UP)
 
 # Our serial port setup
